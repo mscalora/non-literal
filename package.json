@@ -1,11 +1,11 @@
 {
   "name": "non-literal",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "author": {
       "name": "Mike Scalora"
     },
     "main": "dist/NonLiteral.js",
-    "description": "Abusting ES6 literal templates to be non-literal so you can load from a file or tempalte script element",
+    "description": "Abusing ES6 literal templates to be non-literal so you can load from a file or tempalte script element",
     "contributors": [
     {
       "name": "Mike Scalora",
