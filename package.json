@@ -1,0 +1,55 @@
+{
+  "name": "non-literal",
+    "version": "0.0.1",
+    "author": {
+      "name": "Mike Scalora"
+    },
+    "main": "dist/NonLiteral.js",
+    "description": "Abusting ES6 literal templates to be non-literal so you can load from a file or tempalte script element",
+    "contributors": [
+    {
+      "name": "Mike Scalora",
+      "email": "mike@scalora.org"
+    }
+  ],
+  "scripts": {
+    "start": "node example.js",
+    "test": "node node_modules/mocha/bin/mocha --reporter spec test/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:mscalora/non-literal.git"
+  },
+  "keywords": [
+    "Template",
+    "Cross Platform",
+    "ES6"
+  ],
+  "dependencies": {
+  },
+  "devDependencies": {
+    "babel": "^5.2.17",
+    "chai": "^2.3.0",
+    "gulp": "^3.8.11",
+    "gulp-babel": "^5.1.0",
+    "gulp-mocha": "^2.0.1",
+    "mocha": "^2.2.4"
+  },
+  "engine": "node >= 4.3.2",
+  "homepage": "https://github.com/mscalora/non-literal",
+  "bugs": {
+    "url": "https://github.com/mscalora/non-literal/issues"
+  },
+  "private": false,
+  "license": "MIT",
+  "_npmUser": {
+    "name": "mscalora",
+    "email": "mike@scalora.org"
+  },
+  "maintainers": [
+    {
+      "name": "Mike Scalora",
+      "email": "mike@scalora.org"
+    }
+  ]
+}
