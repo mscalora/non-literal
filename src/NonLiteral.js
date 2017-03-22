@@ -1,6 +1,6 @@
 'use strict';
 
-class NonLiteral {
+(function () {
   /**
    * render a string template to a string
    * @param  {object} model        data model
@@ -12,7 +12,7 @@ class NonLiteral {
    *   tag               tag function used to
    * @return {string}              output of rendering
    */
-  render(model, templateText, options) {
+  let render = function (model, templateText, options) {
     let opts = Object.assign({
       graveReplacement: "'",
       context: model,
@@ -26,7 +26,7 @@ class NonLiteral {
     return tmplFunction.apply(opts.context, vars.map(function (key) {
       return opts.filter ? opts.filter(model[key], key, opts) : model[key];
     }));
-  }
+  };
 
   /**
    * render the content from a Dom Node as a template to a string
@@ -36,9 +36,9 @@ class NonLiteral {
    * @see render for other options
    * @return {string}              output of rendering
    */
-  renderFromDom(model, domNode, options) {
-    return this._fromDom(model, domNode, options, this.render);
-  }
+  let renderFromDom = function (model, domNode, options) {
+    return _fromDom(model, domNode, options, render);
+  };
 
   /**
    * render a string template to a html string (pre-encode html entities by default)
@@ -49,10 +49,10 @@ class NonLiteral {
    * @return {string}              output of rendering
    * @node html entity encoding is performed on the model values BEFORE rendering
    */
-  renderHtml(model, templateText, options) {
-    let opts = Object.assign(options || {}, {tag: this._htmlEntitiesTagger});
-    return this.render(model, templateText, opts);
-  }
+  let renderHtml = function (model, templateText, options) {
+    let opts = Object.assign(options || {}, {tag: _htmlEntitiesTagger});
+    return render(model, templateText, opts);
+  };
 
   /**
    * render the content from a Dom Node as a template to a string of html source/markup
@@ -62,21 +62,22 @@ class NonLiteral {
    * @see renderHtml for options
    * @return {string}              output of rendering
    */
-  renderHtmlFromDom(model, domNode, options) {
-    let opts = Object.assign(options || {}, {tag: this._htmlEntitiesTagger});
-    return this._fromDom(model, domNode, opts, this.render);
-  }
+  let renderHtmlFromDom = function (model, domNode, options) {
+    let opts = Object.assign(options || {}, {tag: _htmlEntitiesTagger});
+    return _fromDom(model, domNode, opts, render);
+  };
 
   /**
    * encode special characters into html entities
    * @param  {string} str  string to encode
    * @return {string}      enocded output string
    */
-  htmlEntities(str, key, options) {
+  let htmlEntities = function (str, key, options) {
+    // filter functions can transform the values in the model before rendering
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
+  };
 
-  _fromDom(model, domNode, options, renderer) {
+  let _fromDom = function (model, domNode, options, renderer) {
     if (domNode.innerHtml) {
       return renderer(model, domNode.innerHtml, options);
     } else if (typeof domNode.html === 'function') {
@@ -85,7 +86,7 @@ class NonLiteral {
       if (typeof document === 'object' && document.querySelector) {
         let node = document.querySelector(domNode.trim());
         if (node) {
-          return renderer(model, node.innerHtml, options);
+          return renderer(model, node.innerHTML, options);
         } else {
           throw new Error(`domNode '${domNode.trim()}' appears to be a selector but returned ${node} when queried`);
         }
@@ -95,21 +96,51 @@ class NonLiteral {
     } else {
       throw new Error('domNode parameter does not appear to be a DOM Element, jQuery object or ');
     }
-  }
+  };
 
-  _htmlEntitiesTagger(strings, ...values){
+  let _htmlEntitiesTagger = function (strings, ...values){
     let result = "";
     for(let i =  0; i < strings.length; i++){
       let lit = strings[i],
           raw = lit.endsWith('$') && i < values.length;
       result += raw ? lit.substr(0, lit.length-1) : lit;
       if (i < values.length) {
-        result += raw ? values[i] : values[i].replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        let val = values[i];
+        if (!raw && typeof val === 'string') {
+          result += val.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        } else {
+          result += val;
+        }
       }
     }
 
     return result;
   };
-}
 
-export default new NonLiteral();
+  let publicApi = {
+    render: render,
+    renderHtml: renderHtml,
+    renderFromDom: renderFromDom,
+    renderHtmlFromDom: renderHtmlFromDom,
+    htmlEntities: htmlEntities
+  };
+
+  let isNode=new Function("try {return this===global;}catch(e){return false;}");
+  let isBrowser=new Function("try {return this===window;}catch(e){ return false;}");
+
+  if (isNode() && typeof module !== 'undefined') {
+    module.exports = publicApi;
+  }
+
+  if (isBrowser()) {
+    window.nonLiteral = publicApi;
+    if (typeof jQuery !== 'undefined') {
+      jQuery.fn.renderNonLiteral = function (model, options) {
+        if (this.length) {
+          return renderHtml(model, this.html(), options);
+        }
+      };
+      jQuery.nonliteral = publicApi;
+    }
+  }
+}());

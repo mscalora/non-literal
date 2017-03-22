@@ -1,0 +1,110 @@
+<html>
+<head>
+  <script src="//code.jquery.com/jquery-latest.min.js"></script>
+  <script src="dist/NonLiteral.js"></script>
+  <style>
+    section {
+      margin-bottom: 1em;
+    }
+    textarea {
+      width: 100%;
+      min-height: 1in;
+    }
+    table {
+      border-collapse: collapse;
+      margin: 1em auto;
+    }
+    td, th {
+      border: 1px solid #444;
+      padding: 0 6px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<section>
+  <button id="withPlugin" type="button">Render With jQUery Plugin</button>
+  <button id="withAPI" type="button">Render With API</button>
+</section>
+
+<h4>Model</h4>
+<section id="model">
+  <textarea>
+{
+    "score": 55,
+    "name": "Mike & Anisa"
+}
+  </textarea>
+</section>
+
+<h4>Example Template Source</h4>
+<section id="template-display">
+  <textarea readonly>
+  </textarea>
+</section>
+
+<script id="template" type="application/template">
+  <tr><td>${name}</td><td>${score}</td><td>$${score >= 90 ? '&#127822;' : score >= 80 ? '&#128079;' : score >= 60 ? '&#128077;' : '&#128078;'}</td></tr>
+</script>
+
+<h4>Template Render Output</h4>
+<section id="debug">
+  <textarea readonly>
+  </textarea>
+</section>
+
+<h4>Example Output</h4>
+<section id="target">
+  <table>
+    <thead><tr><th>Name</th><th>Score</th><th>Success</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<script>
+  // show template source
+  $('#template-display textarea').val($('#template').html());
+
+  function testWithAPI(evt) {
+    // parse the model, any plain old js object will do
+    var model = JSON.parse(document.querySelector('#model textarea').value);
+    // render the template which is pulled form a script element, could be just a js string
+    var html = nonLiteral.renderHtmlFromDom(model, '#template');
+    // use the output
+    document.querySelector('tbody').innerHTML += html;
+    // show the output srouce
+    document.querySelector('#debug textarea').value = html;
+
+    setupNewTestData();
+  }
+
+  $('#withAPI').on('click', testWithAPI);
+
+  function testWithPlugin(evt) {
+    // parse the model
+    var model = JSON.parse($('#model textarea').val());
+    // render the template
+    var html = $('#template').renderNonLiteral(model);
+    // use the output
+    $('#target tbody').append(html);
+    // show the output srouce
+    $('#debug textarea').val(html);
+
+    setupNewTestData();
+  }
+
+  $('#withPlugin').on('click',testWithPlugin);
+
+  function setupNewTestData() {
+    $('#model textarea').val(JSON.stringify({
+      name: names[Math.floor(Math.random()*names.length)] + ' & ' +
+          names[Math.floor(Math.random()*names.length)],
+      score: Math.floor(Math.random()*50)+50
+    }, null,2));
+  }
+
+  const names = ["Fred", "Mary", "Chris", "Pat", "Jill", "Cory", "Gene", "Jane", "Jo", "Phil", "Kyle"];
+</script>
+</body>
+</html>
